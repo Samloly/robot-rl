@@ -414,7 +414,7 @@ class MyPPO(PPO):
         if self.rnd:
             model_params.append(self.rnd.predictor.state_dict())
         # broadcast the model parameters
-        torch.distributed.broadcast_object_list(model_params[0])
+        torch.distributed.broadcast_object_list(model_params, src=0)
         if self.rnd:
             self.rnd.predictor.load_state_dict(model_params[1])
 

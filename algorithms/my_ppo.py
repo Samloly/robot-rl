@@ -1,6 +1,5 @@
-from rsl_rl.algorithms.ppo import PPO
 from __future__ import annotations
-
+from rsl_rl.algorithms.ppo import PPO
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -141,8 +140,8 @@ class MyPPO(PPO):
 
         # Bootstrapping on time outs
         if "time_outs" in extras:
-            self.transition.rewards += self.gamma * torhc.squeeze(
-                self.transition.values * extras["time_out"].unsqueeze(1).to(self.device),1
+            self.transition.rewards += self.gamma * torch.squeeze(
+                self.transition.values * extras["time_outs"].unsqueeze(1).to(self.device),1
             )
 
         # record the transitoin
@@ -219,7 +218,7 @@ class MyPPO(PPO):
                 num_aug = int(obs_batch.batch_size[0] / original_batch_size)
                 # repeat the rest of the batch
                 # -- actor
-                old_actions_log_prob_batch = old_actions_log_prob_batch.repeate(num_aug,1)
+                old_actions_log_prob_batch = old_actions_log_prob_batch.repeat(num_aug,1)
                 # --critic
                 target_values_batch = target_values_batch.repeat(num_aug,1)
                 advantages_batch = advantages_batch.repeat(num_aug,1)
@@ -234,7 +233,7 @@ class MyPPO(PPO):
             value_batch = self.policy.evaluate(obs_batch, masks=masks_batch,hidden_states=hid_states_batch[1])
             # -- entropy
             # we only keep the entropy of the first augmentation (the original one)
-            num_batch = self.policy.action_mean[:original_batch_size]
+            mu_batch = self.policy.action_mean[:original_batch_size]
             sigma_batch = self.policy.action_std[:original_batch_size]
             entropy_batch = self.policy.entropy[:original_batch_size]
 
@@ -289,7 +288,7 @@ class MyPPO(PPO):
                     -self.clip_param, self.clip_param
                 )
                 value_losses = (value_batch-returns_batch).pow(2)
-                value_losses_clipped = (value_clipped-returns_batch)/pow(2)
+                value_losses_clipped = (value_clipped-returns_batch).pow(2)
                 value_loss = torch.max(value_losses,value_losses_clipped).mean()
             else:
                 value_loss = (returns_batch - value_batch).pow(2).mean()
@@ -411,7 +410,7 @@ class MyPPO(PPO):
     def broadcast_parameters(self):
         """Broadcast model parameters to all GPUs."""
         # obtain the model parameters on current GPU
-        model_params = s[self.policy.state_dict()]
+        model_params = [self.policy.state_dict()]
         if self.rnd:
             model_params.append(self.rnd.predictor.state_dict())
         # broadcast the model parameters

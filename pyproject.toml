@@ -1,0 +1,26 @@
+[project]
+name = "locomotion-rl"
+version = "0.1.0"
+description = "Robot reinforcement learning with MuJoCo Playground"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+
+dependencies = [
+    "playground[cuda,notebooks]==0.2.0",
+    "rsl-rl-lib==3.0.1",
+    "ipykernel",
+    "torch",
+    "tensorboard",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
